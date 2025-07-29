@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NeoClicker | Сучасний Клікер</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #00e5ff;
+      --secondary: #ff00ea;
+      --accent: #00ff9d;
+      --bg-dark: #0f0c29;
+      --bg-light: rgba(25, 20, 60, 0.6);
+      --card-bg: rgba(255, 255, 255, 0.08);
+      --text: #f0f0f0;
+      --text-muted: #aaa;
+      --success: #00ff9d;
+      --danger: #ff4d6d;
+    }
+
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+    }
+
+    body {
+      font-family: 'Segoe UI', 'Montserrat', sans-serif;
+      background: var(--bg-dark);
+      background: linear-gradient(to bottom, var(--bg-dark), #0c0a1f);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 20% 30%, rgba(0, 229, 255, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(255, 0, 234, 0.15) 0%, transparent 40%);
+      z-index: -1;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding: 15px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .stats {
+      display: flex;
+      gap: 20px;
+    }
+
+    .stat-card {
+      background: var(--bg-light);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 12px 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      min-width: 150px;
+    }
+
+    .stat-card h3 {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 5px;
+    }
+
+    .stat-card .value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--primary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .game-area {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 40px;
+      position: relative;
+    }
+
+    #score {
+      font-size: 3.5rem;
+      font-weight: 800;
+      margin: 20px 0 40px;
+      text-align: center;
+      position: relative;
+      padding: 10px 30px;
+      border-radius: 50px;
+      background: var(--bg-light);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .click-button {
+      background: linear-gradient(145deg, #1a1a40, #0d0d2b);
+      color: white;
+      font-size: 1.8rem;
+      font-weight: 700;
+      padding: 30px 80px;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 
+        0 15px 35px rgba(0, 0, 0, 0.4),
+        inset 0 0 15px rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .click-button::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, 
+        transparent, 
+        rgba(0, 229, 255, 0.2), 
+        transparent);
+      transform: translateX(-100%);
+    }
+
+    .click-button:hover {
+      transform: scale(1.05);
+      box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.5),
+        0 0 20px rgba(0, 229, 255, 0.3),
+        inset 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    .click-button:hover::before {
+      animation: shine 1.5s infinite;
+    }
+
+    .click-button:active {
+      transform: scale(0.98);
+    }
+
+    @keyframes shine {
+      100% {
+        transform: translateX(100%);
+      }
+    }
+
+    .popup {
+      position: absolute;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      animation: pop 0.8s ease-out forwards;
+      pointer-events: none;
+      text-shadow: 0 0 10px rgba(0, 255, 157, 0.7);
+      z-index: 10;
+    }
+
+    @keyframes pop {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+    }
+
+    .shop-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 25px;
+      width: 100%;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .shop-section {
+      background: var(--bg-light);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .shop-section h2 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .shop-section h2 i {
+      color: var(--primary);
+    }
+
+    .shop-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      margin-bottom: 15px;
+      background: var(--card-bg);
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .shop-item:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .item-info {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .item-name {
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .item-name i {
+      color: var(--accent);
+    }
+
+    .item-desc {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .item-price {
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .buy {
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .buy:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 20px rgba(0, 229, 255, 0.4);
+    }
+
+    .buy:disabled {
+      background: linear-gradient(90deg, #555, #333);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .particles {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      background: var(--primary);
+      opacity: 0.5;
+      animation: float 15s infinite linear;
+    }
+
+    @keyframes float {
+      0% {
+        transform: translateY(0) translateX(0) rotate(0deg);
+        opacity: 0;
+      }
+      10% {
+        opacity: 0.5;
+      }
+      90% {
+        opacity: 0.6;
+      }
+      100% {
+        transform: translateY(-100vh) translateX(100px) rotate(360deg);
+        opacity: 0;
+      }
+    }
+
+    .achievements {
+      margin-top: 40px;
+      background: var(--bg-light);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .achievements h2 {
+      font-size: 1.8rem;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badges {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      background: var(--card-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      position: relative;
+      transition: all 0.3s ease;
+    }
+
+    .badge.locked {
+      filter: grayscale(1);
+      opacity: 0.5;
+    }
+
+    .badge.unlocked {
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+    }
+
+    .badge .tooltip {
+      position: absolute;
+      bottom: -40px;
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+    }
+
+    .badge:hover .tooltip {
+      opacity: 1;
+    }
+
+    footer {
+      margin-top: 50px;
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      padding: 20px;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    @media (max-width: 768px) {
+      header {
+        flex-direction: column;
+        gap: 20px;
+      }
+      
+      .stats {
+        width: 100%;
+        justify-content: center;
+      }
+      
+      .click-button {
+        padding: 20px 50px;
+        font-size: 1.5rem;
+      }
+      
+      .shop-container {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="particles" id="particles"></div>
+  
+  <div class="container">
+    <header>
+      <div class="logo">
+        <i class="fas fa-mouse"></i>
+        <span>NeoClicker</span>
+      </div>
+      <div class="stats">
+        <div class="stat-card">
+          <h3>Кліків за секунду</h3>
+          <div class="value" id="cps">0</div>
+        </div>
+        <div class="stat-card">
+          <h3>Загалом кліків</h3>
+          <div class="value" id="totalClicks">0</div>
+        </div>
+      </div>
+    </header>
+    
+    <main class="game-area">
+      <div id="score">0</div>
+      <button class="click-button" onclick="addClick(event)">
+        <i class="fas fa-hand-pointer"></i> Клікни!
+      </button>
+    </main>
+    
+    <div class="shop-container">
+      <div class="shop-section">
+        <h2><i class="fas fa-bolt"></i> Покращення кліку</h2>
+        <div class="shop-item">
+          <div class="item-info">
+            <div class="item-name">
+              <i class="fas fa-fist-raised"></i>
+              <span>Базовий клік</span>
+            </div>
+            <div class="item-desc">+1 до сили кліку</div>
+          </div>
+          <button class="buy" onclick="buyUpgrade('click')">
+            <i class="fas fa-shopping-cart"></i> <span id="clickPrice">50</span>
+          </button>
+        </div>
+        <div class="shop-item">
+          <div class="item-info">
+            <div class="item-name">
+              <i class="fas fa-gem"></i>
+              <span>Потужний клік</span>
+            </div>
+            <div class="item-desc">+5 до сили кліку</div>
+          </div>
+          <button class="buy" onclick="buyUpgrade('powerClick')">
+            <i class="fas fa-shopping-cart"></i> <span id="powerClickPrice">500</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="shop-section">
+        <h2><i class="fas fa-robot"></i> Автоклікери</h2>
+        <div class="shop-item">
+          <div class="item-info">
+            <div class="item-name">
+              <i class="fas fa-cog"></i>
+              <span>Базовий автоклікер</span>
+            </div>
+            <div class="item-desc">+1 клік/сек</div>
+          </div>
+          <button class="buy" onclick="buyUpgrade('auto')">
+            <i class="fas fa-shopping-cart"></i> <span id="autoPrice">100</span>
+          </button>
+        </div>
+        <div class="shop-item">
+          <div class="item-info">
+            <div class="item-name">
+              <i class="fas fa-tachometer-alt"></i>
+              <span>Просунутий автоклікер</span>
+            </div>
+            <div class="item-desc">+5 кліків/сек</div>
+          </div>
+          <button class="buy" onclick="buyUpgrade('advancedAuto')">
+            <i class="fas fa-shopping-cart"></i> <span id="advancedAutoPrice">1000</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <div class="achievements">
+      <h2><i class="fas fa-trophy"></i> Досягнення</h2>
+      <div class="badges">
+        <div class="badge locked" id="badge1">
+          <i class="fas fa-coins"></i>
+          <div class="tooltip">1000 кліків</div>
+        </div>
+        <div class="badge locked" id="badge2">
+          <i class="fas fa-rocket"></i>
+          <div class="tooltip">10 автоклікерів</div>
+        </div>
+        <div class="badge locked" id="badge3">
+          <i class="fas fa-crown"></i>
+          <div class="tooltip">50000 кліків</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <footer>
+    <p>© 2025 NeoClicker | Створено з <i class="fas fa-heart" style="color: var(--danger)"></i> для клікерів</p>
+  </footer>
+
+  <audio id="clickSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_8e632d0b57.mp3"></audio>
+  <audio id="buySound" src="https://cdn.pixabay.com/audio/2021/08/04/audio_8e8c1a0b4d.mp3"></audio>
+  <audio id="achievementSound" src="https://cdn.pixabay.com/audio/2022/02/22/audio_8e1aeb6c7a.mp3"></audio>
+
+  <script>
+    // Game state
+    let score = parseInt(localStorage.getItem("score")) || 0;
+    let clickPower = parseInt(localStorage.getItem("clickPower")) || 1;
+    let autoClickers = parseInt(localStorage.getItem("autoClickers")) || 0;
+    let advancedAutoClickers = parseInt(localStorage.getItem("advancedAutoClickers")) || 0;
+    let totalClicks = parseInt(localStorage.getItem("totalClicks")) || 0;
+    
+    // Prices
+    let clickPrice = parseInt(localStorage.getItem("clickPrice")) || 50;
+    let powerClickPrice = parseInt(localStorage.getItem("powerClickPrice")) || 500;
+    let autoPrice = parseInt(localStorage.getItem("autoPrice")) || 100;
+    let advancedAutoPrice = parseInt(localStorage.getItem("advancedAutoPrice")) || 1000;
+    
+    // Elements
+    const scoreEl = document.getElementById("score");
+    const cpsEl = document.getElementById("cps");
+    const totalClicksEl = document.getElementById("totalClicks");
+    const clickSound = document.getElementById("clickSound");
+    const buySound = document.getElementById("buySound");
+    const achievementSound = document.getElementById("achievementSound");
+    
+    // Update UI
+    function updateUI() {
+      scoreEl.textContent = score.toLocaleString();
+      cpsEl.textContent = (autoClickers + advancedAutoClickers * 5).toLocaleString();
+      totalClicksEl.textContent = totalClicks.toLocaleString();
+      
+      // Update prices
+      document.getElementById("clickPrice").textContent = clickPrice.toLocaleString();
+      document.getElementById("powerClickPrice").textContent = powerClickPrice.toLocaleString();
+      document.getElementById("autoPrice").textContent = autoPrice.toLocaleString();
+      document.getElementById("advancedAutoPrice").textContent = advancedAutoPrice.toLocaleString();
+      
+      // Update button states
+      document.querySelectorAll('.buy').forEach(btn => {
+        const price = parseInt(btn.querySelector('span').textContent.replace(/,/g, ''));
+        btn.disabled = score < price;
+      });
+      
+      // Save state
+      localStorage.setItem("score", score);
+      localStorage.setItem("clickPower", clickPower);
+      localStorage.setItem("autoClickers", autoClickers);
+      localStorage.setItem("advancedAutoClickers", advancedAutoClickers);
+      localStorage.setItem("totalClicks", totalClicks);
+      localStorage.setItem("clickPrice", clickPrice);
+      localStorage.setItem("powerClickPrice", powerClickPrice);
+      localStorage.setItem("autoPrice", autoPrice);
+      localStorage.setItem("advancedAutoPrice", advancedAutoPrice);
+      
+      // Check achievements
+      checkAchievements();
+    }
+    
+    // Click handler
+    function addClick(e) {
+      score += clickPower;
+      totalClicks += clickPower;
+      playSound(clickSound);
+      createPopup("+" + clickPower, e.clientX, e.clientY);
+      updateUI();
+    }
+    
+    // Play sound
+    function playSound(sound) {
+      sound.currentTime = 0;
+      sound.volume = 0.3;
+      sound.play().catch(e => console.log("Audio play error:", e));
+    }
+    
+    // Create popup
+    function createPopup(text, x, y) {
+      const popup = document.createElement("div");
+      popup.className = "popup";
+      popup.textContent = text;
+      popup.style.left = `${x}px`;
+      popup.style.top = `${y}px`;
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 800);
+    }
+    
+    // Buy upgrade
+    function buyUpgrade(type) {
+      let success = false;
+      
+      switch(type) {
+        case 'click':
+          if (score >= clickPrice) {
+            score -= clickPrice;
+            clickPower += 1;
+            clickPrice = Math.floor(clickPrice * 1.5);
+            success = true;
+          }
+          break;
+          
+        case 'powerClick':
+          if (score >= powerClickPrice) {
+            score -= powerClickPrice;
+            clickPower += 5;
+            powerClickPrice = Math.floor(powerClickPrice * 1.8);
+            success = true;
+          }
+          break;
+          
+        case 'auto':
+          if (score >= autoPrice) {
+            score -= autoPrice;
+            autoClickers += 1;
+            autoPrice = Math.floor(autoPrice * 1.6);
+            success = true;
+          }
+          break;
+          
+        case 'advancedAuto':
+          if (score >= advancedAutoPrice) {
+            score -= advancedAutoPrice;
+            advancedAutoClickers += 1;
+            advancedAutoPrice = Math.floor(advancedAutoPrice * 1.7);
+            success = true;
+          }
+          break;
+      }
+      
+      if (success) {
+        playSound(buySound);
+        createPopup("Успіх!", 100, 100);
+        updateUI();
+      }
+    }
+    
+    // Auto-clickers
+    setInterval(() => {
+      const clicks = autoClickers + (advancedAutoClickers * 5);
+      score += clicks;
+      totalClicks += clicks;
+      updateUI();
+    }, 1000);
+    
+    // Create particles
+    function createParticles() {
+      const particlesContainer = document.getElementById('particles');
+      const particleCount = 30;
+      
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        
+        // Random size and position
+        const size = Math.random() * 10 + 5;
+        const posX = Math.random() * 100;
+        const posY = Math.random() * 100 + 100;
+        
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+        particle.style.left = `${posX}%`;
+        particle.style.top = `${posY}%`;
+        
+        // Random color
+        const colors = ['#00e5ff', '#ff00ea', '#00ff9d'];
+        particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+        
+        // Random animation duration
+        particle.style.animationDuration = `${Math.random() * 20 + 10}s`;
+        particle.style.animationDelay = `${Math.random() * 5}s`;
+        
+        particlesContainer.appendChild(particle);
+      }
+    }
+    
+    // Check achievements
+    function checkAchievements() {
+      // 1000 clicks
+      if (score >= 1000) {
+        document.getElementById('badge1').className = 'badge unlocked';
+      }
+      
+      // 10 autoclickers
+      if (autoClickers + advancedAutoClickers >= 10) {
+        document.getElementById('badge2').className = 'badge unlocked';
+      }
+      
+      // 50000 clicks
+      if (score >= 50000) {
+        document.getElementById('badge3').className = 'badge unlocked';
+      }
+    }
+    
+    // Initialize
+    window.onload = function() {
+      updateUI();
+      createParticles();
+    };
+  </script>
+</body>
+</html>
